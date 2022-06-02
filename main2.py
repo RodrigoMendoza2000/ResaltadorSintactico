@@ -15,7 +15,7 @@ def obtener_valores_regex(texto):
     # instrucciones regex con el siguiente orden:
     # 1. Comentarios 2. Reales 3. Variables 4. Enteros 5. Multiplicación 6. Suma 7. Resta 8. Parentesis que abre
     # 9. Parentesis que cierra 10. Division 11. Potencia 12. Asignacion
-    lista_tokens = re.findall("\d*\.\d*|[A-Za-z]+[\d_]*|[0-9]+|\*|\+|\-|\(|\)|\/{1}|\^|\=|.", texto)
+    lista_tokens = re.findall("\d*\.\d*|[A-Za-z]+[\d_A-Za-z]*|[0-9]+|\*|\+|\-|\(|\)|\/{1}|\^|\=|.", texto)
     lista_tokens += comentario
 
     return lista_tokens
@@ -87,18 +87,23 @@ def E():
     else:
         if tokens[t][1] == "Suma":  # Para las sumas +
             match("Suma")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Resta":  # Para las restas -
             match("Resta")
+            match_no_comentario()
             E()
-        elif tokens[t][1] == "Multiplicacion":  # Para las multiplicaciones *
+        elif tokens[t][1] == "Multiplicacion":  # Para las multiplicaciones *z
             match("Multiplicacion")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Division":  # para las divisiones /
             match("Division")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Potencia":  # Para las potencias ^
             match("Potencia")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Parentesis_que_abre":
             # Matchea primero un parentesis que abre y aplica recursión hasta encontrar un parentesis que cierra y
@@ -131,6 +136,13 @@ def match(c):
         t += 1
     else:
         raise Exception
+
+
+def match_no_comentario():
+    global t
+    if tokens[t][1] == "Comentario":
+        raise Exception
+
 
 
 # Lee todo el archivo para utilizar el lexer_aritmetico y aplicar toda la gramatica
@@ -197,4 +209,4 @@ def main(archivo):
     html_css(archivo)
 
 
-main('archivo.txt')
+main('a_a_man.txt')
