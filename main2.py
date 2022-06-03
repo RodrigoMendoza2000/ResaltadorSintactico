@@ -73,6 +73,7 @@ def gramatica():
     if tokens[t][1] == "Variable" and tokens[t + 1][1] == "Asignacion":
         match("Variable")
         match("Asignacion")
+        match_no_operador()
         E()
     elif tokens[t][1] == "Comentario":
         match("Comentario")
@@ -114,12 +115,15 @@ def E():
             E()
         elif tokens[t][1] == "Real":  # Para numeros reales (ex. 1.1)
             match("Real")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "Entero":  # Para numeros enteros (ex. 5)
             match("Entero")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "Variable":  # Para variables (ex. a_2)
             match("Variable")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "no_valido":  # Para todos los otros caracteres no validos (ex. ?)
             raise Exception
@@ -141,6 +145,18 @@ def match(c):
 def match_no_comentario():
     global t
     if tokens[t][1] == "Comentario":
+        raise Exception
+
+def match_no_variable_numero():
+    global t
+    if t >= len(tokens):
+        pass
+    elif tokens[t][1] in ['Variable', 'Real', 'Entero']:
+        raise Exception
+
+def match_no_operador():
+    global t
+    if tokens[t][1] in ['Suma', 'Resta', 'Multiplicacion', 'Division', 'Potencia']:
         raise Exception
 
 
