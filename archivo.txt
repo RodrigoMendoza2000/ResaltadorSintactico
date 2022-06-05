@@ -1,7 +1,0 @@
-b=7
-a = 32.4 *(8.6 - b)/       6.1
-d_1_2 = a ^ b // Esto es un comentario
-a = 32.4 *(8.6 - b/       6.1
-saasfsafsa
-klds = 22 + 3 - 1 * 5 //Comentario
-// HOLA COMO

@@ -1,4 +1,5 @@
 import re
+from os import listdir
 
 
 # Rodrigo Alfredo Mendoza España
@@ -189,11 +190,11 @@ def start(archivo):
 # Lee los tokens con sus definiciones y los escribe en archivos html y css
 def html_css(archivo):
     listado_tokens = start(archivo)
-    with open('index.html', 'w') as html:
-        html.write("""<!DOCTYPE html>
+    with open(f'{archivo}.html', 'w') as html:
+        html.write(f"""<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="{archivo}.css">
 </head>
 <body>
 
@@ -212,7 +213,7 @@ def html_css(archivo):
                     'Parentesis_que_cierra', 'Comentario', 'Potencia', 'no_valido', 'Division']
     colores = ['DeepPink', 'Blue', 'Green', 'Orange', 'Yellow', 'Khaki', 'Gray', 'Purple', 'Pink', 'Black',
                'Red', 'Lavender']
-    with open('index.css', 'w') as css:
+    with open(f'{archivo}.css', 'w') as css:
         for i in range(len(lista_tokens)):
             css.write(f".{lista_tokens[i]}")
             css.write("{color:")
@@ -221,8 +222,18 @@ def html_css(archivo):
         css.write(".ERROR{background-color:red}")
 
 
+def lectura_archivos(directorio):
+    global archivos_totales
+    archivos = listdir(directorio)
+    for archivo in archivos:
+        if bool(re.search('.*\.txt', archivo)):
+            html_css(archivo)
+        else:
+            lectura_archivos(directorio+'/'+archivo)
+
 def main(archivo):
-    html_css(archivo)
+    lectura_archivos(archivo)
 
 
-main('a_a_man.txt')
+main('test')
+
