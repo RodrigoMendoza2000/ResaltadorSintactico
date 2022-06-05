@@ -1,5 +1,6 @@
 import re
 from os import listdir
+import threading
 
 
 # Rodrigo Alfredo Mendoza España
@@ -225,14 +226,23 @@ def html_css(archivo):
         css.write(".ERROR{background-color:red}")
 
 
+archivos_totales = 0
+
+
 def lectura_archivos(directorio):
     global archivos_totales
     archivos = listdir(directorio)
     for archivo in archivos:
+        archivo_con_directorio = directorio+'/'+archivo
         if bool(re.search('.*\.txt', archivo)):
             html_css(directorio+'/'+archivo)
-        else:
-            lectura_archivos(directorio+'/'+archivo)
+            archivos_totales += 1
+            print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')
+        elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
+            #Con threads
+            threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
+            #Sin threads
+            #lectura_archivos(directorio+'/'+archivo)
 
 def main(archivo):
     lectura_archivos(archivo)
