@@ -190,11 +190,14 @@ def start(archivo):
 # Lee los tokens con sus definiciones y los escribe en archivos html y css
 def html_css(archivo):
     listado_tokens = start(archivo)
-    with open(f'{archivo}.html', 'w') as html:
+    texto_sin_directorio = re.sub(".*\/{1}", "", archivo)
+    texto_sin_txt_ni_directorio = re.sub('\.txt', "", texto_sin_directorio)
+    texto_sin_txt = re.sub('\.txt', "", archivo)
+    with open(f'{texto_sin_txt}.html', 'w') as html:
         html.write(f"""<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="{archivo}.css">
+<link rel="stylesheet" href="{texto_sin_txt_ni_directorio}.css">
 </head>
 <body>
 
@@ -213,7 +216,7 @@ def html_css(archivo):
                     'Parentesis_que_cierra', 'Comentario', 'Potencia', 'no_valido', 'Division']
     colores = ['DeepPink', 'Blue', 'Green', 'Orange', 'Yellow', 'Khaki', 'Gray', 'Purple', 'Pink', 'Black',
                'Red', 'Lavender']
-    with open(f'{archivo}.css', 'w') as css:
+    with open(f'{texto_sin_txt}.css', 'w') as css:
         for i in range(len(lista_tokens)):
             css.write(f".{lista_tokens[i]}")
             css.write("{color:")
@@ -227,7 +230,7 @@ def lectura_archivos(directorio):
     archivos = listdir(directorio)
     for archivo in archivos:
         if bool(re.search('.*\.txt', archivo)):
-            html_css(archivo)
+            html_css(directorio+'/'+archivo)
         else:
             lectura_archivos(directorio+'/'+archivo)
 
