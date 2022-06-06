@@ -1,6 +1,8 @@
 import re
 from os import listdir
 import threading
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 
 
 # Rodrigo Alfredo Mendoza España
@@ -229,18 +231,25 @@ def html_css(archivo):
 archivos_totales = 0
 
 
+executor = ProcessPoolExecutor(max_workers = 4)
 def lectura_archivos(directorio):
     global archivos_totales
+    global executor
     archivos = listdir(directorio)
     for archivo in archivos:
         archivo_con_directorio = directorio+'/'+archivo
         if bool(re.search('.*\.txt', archivo)):
             html_css(directorio+'/'+archivo)
             archivos_totales += 1
-            print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')
+
+            print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
+            # para threads
+            #print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')
         elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
+            #Con procesos
+            executor.submit(lectura_archivos, archivo_con_directorio, executor)
             #Con threads
-            threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
+            #threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
             #Sin threads
             #lectura_archivos(directorio+'/'+archivo)
 
@@ -248,5 +257,8 @@ def main(archivo):
     lectura_archivos(archivo)
 
 
-main('test')
+
+if __name__ == '__main__':
+    main('test')
+#main('test')
 
