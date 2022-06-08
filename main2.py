@@ -231,7 +231,7 @@ def html_css(archivo):
 archivos_totales = 0
 
 
-executor = ProcessPoolExecutor(max_workers = 4)
+executor = ProcessPoolExecutor(max_workers = 6)
 def lectura_archivos(directorio):
     global archivos_totales
     global executor
@@ -242,16 +242,19 @@ def lectura_archivos(directorio):
             html_css(directorio+'/'+archivo)
             archivos_totales += 1
 
-            print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
+            # para procesos
+            # print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
             # para threads
-            #print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')
+            # print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')\
+            # sin threads ni procesos
+            print(f'archivo numero: {archivos_totales}')
         elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
             #Con procesos
-            executor.submit(lectura_archivos, archivo_con_directorio, executor)
+            # executor.submit(lectura_archivos, archivo_con_directorio)
             #Con threads
-            #threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
+            # threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
             #Sin threads
-            #lectura_archivos(directorio+'/'+archivo)
+            lectura_archivos(directorio+'/'+archivo)
 
 def main(archivo):
     lectura_archivos(archivo)
