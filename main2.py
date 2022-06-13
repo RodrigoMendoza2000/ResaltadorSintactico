@@ -1,4 +1,8 @@
 import re
+from os import listdir
+import threading
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
 
 
 # Rodrigo Alfredo Mendoza España
@@ -15,7 +19,7 @@ def obtener_valores_regex(texto):
     # instrucciones regex con el siguiente orden:
     # 1. Comentarios 2. Reales 3. Variables 4. Enteros 5. Multiplicación 6. Suma 7. Resta 8. Parentesis que abre
     # 9. Parentesis que cierra 10. Division 11. Potencia 12. Asignacion
-    lista_tokens = re.findall("\d*\.\d*|[A-Za-z]+[\d_]*|[0-9]+|\*|\+|\-|\(|\)|\/{1}|\^|\=|.", texto)
+    lista_tokens = re.findall("\d*\.\d*|[A-Za-z]+[\d_A-Za-z]*|[0-9]+|\*|\+|\-|\(|\)|\/{1}|\^|\=|.", texto)
     lista_tokens += comentario
 
     return lista_tokens
@@ -73,6 +77,7 @@ def gramatica():
     if tokens[t][1] == "Variable" and tokens[t + 1][1] == "Asignacion":
         match("Variable")
         match("Asignacion")
+        match_no_operador()
         E()
     elif tokens[t][1] == "Comentario":
         match("Comentario")
@@ -87,18 +92,23 @@ def E():
     else:
         if tokens[t][1] == "Suma":  # Para las sumas +
             match("Suma")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Resta":  # Para las restas -
             match("Resta")
+            match_no_comentario()
             E()
-        elif tokens[t][1] == "Multiplicacion":  # Para las multiplicaciones *
+        elif tokens[t][1] == "Multiplicacion":  # Para las multiplicaciones *z
             match("Multiplicacion")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Division":  # para las divisiones /
             match("Division")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Potencia":  # Para las potencias ^
             match("Potencia")
+            match_no_comentario()
             E()
         elif tokens[t][1] == "Parentesis_que_abre":
             # Matchea primero un parentesis que abre y aplica recursión hasta encontrar un parentesis que cierra y
@@ -109,12 +119,15 @@ def E():
             E()
         elif tokens[t][1] == "Real":  # Para numeros reales (ex. 1.1)
             match("Real")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "Entero":  # Para numeros enteros (ex. 5)
             match("Entero")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "Variable":  # Para variables (ex. a_2)
             match("Variable")
+            match_no_variable_numero()
             E()
         elif tokens[t][1] == "no_valido":  # Para todos los otros caracteres no validos (ex. ?)
             raise Exception
@@ -131,6 +144,25 @@ def match(c):
         t += 1
     else:
         raise Exception
+
+
+def match_no_comentario():
+    global t
+    if tokens[t][1] == "Comentario":
+        raise Exception
+
+def match_no_variable_numero():
+    global t
+    if t >= len(tokens):
+        pass
+    elif tokens[t][1] in ['Variable', 'Real', 'Entero']:
+        raise Exception
+
+def match_no_operador():
+    global t
+    if tokens[t][1] in ['Suma', 'Resta', 'Multiplicacion', 'Division', 'Potencia']:
+        raise Exception
+
 
 
 # Lee todo el archivo para utilizar el lexer_aritmetico y aplicar toda la gramatica
@@ -161,11 +193,14 @@ def start(archivo):
 # Lee los tokens con sus definiciones y los escribe en archivos html y css
 def html_css(archivo):
     listado_tokens = start(archivo)
-    with open('index.html', 'w') as html:
-        html.write("""<!DOCTYPE html>
+    texto_sin_directorio = re.sub(".*\/{1}", "", archivo)
+    texto_sin_txt_ni_directorio = re.sub('\.txt', "", texto_sin_directorio)
+    texto_sin_txt = re.sub('\.txt', "", archivo)
+    with open(f'{texto_sin_txt}.html', 'w') as html:
+        html.write(f"""<!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="index.css">
+<link rel="stylesheet" href="{texto_sin_txt_ni_directorio}.css">
 </head>
 <body>
 
@@ -184,7 +219,7 @@ def html_css(archivo):
                     'Parentesis_que_cierra', 'Comentario', 'Potencia', 'no_valido', 'Division']
     colores = ['DeepPink', 'Blue', 'Green', 'Orange', 'Yellow', 'Khaki', 'Gray', 'Purple', 'Pink', 'Black',
                'Red', 'Lavender']
-    with open('index.css', 'w') as css:
+    with open(f'{texto_sin_txt}.css', 'w') as css:
         for i in range(len(lista_tokens)):
             css.write(f".{lista_tokens[i]}")
             css.write("{color:")
@@ -193,8 +228,40 @@ def html_css(archivo):
         css.write(".ERROR{background-color:red}")
 
 
+archivos_totales = 0
+
+
+executor = ProcessPoolExecutor(max_workers = 6)
+def lectura_archivos(directorio):
+    global archivos_totales
+    global executor
+    archivos = listdir(directorio)
+    for archivo in archivos:
+        archivo_con_directorio = directorio+'/'+archivo
+        if bool(re.search('.*\.txt', archivo)):
+            html_css(directorio+'/'+archivo)
+            archivos_totales += 1
+
+            # para procesos
+            # print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
+            # para threads
+            # print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')\
+            # sin threads ni procesos
+            print(f'archivo numero: {archivos_totales}')
+        elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
+            #Con procesos
+            # executor.submit(lectura_archivos, archivo_con_directorio)
+            #Con threads
+            # threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
+            #Sin threads
+            lectura_archivos(directorio+'/'+archivo)
+
 def main(archivo):
-    html_css(archivo)
+    lectura_archivos(archivo)
 
 
-main('archivo.txt')
+
+if __name__ == '__main__':
+    main('test')
+#main('test')
+
