@@ -85,7 +85,7 @@ def gramatica():
         raise Exception
 
 
-## Aplica recursión para que se sigan matcheando los tokens con las definiciones validas
+# Aplica recursión para que se sigan matcheando los tokens con las definiciones validas
 def E():
     if t >= len(tokens):
         pass
@@ -151,6 +151,7 @@ def match_no_comentario():
     if tokens[t][1] == "Comentario":
         raise Exception
 
+
 def match_no_variable_numero():
     global t
     if t >= len(tokens):
@@ -158,11 +159,11 @@ def match_no_variable_numero():
     elif tokens[t][1] in ['Variable', 'Real', 'Entero']:
         raise Exception
 
+
 def match_no_operador():
     global t
     if tokens[t][1] in ['Suma', 'Resta', 'Multiplicacion', 'Division', 'Potencia']:
         raise Exception
-
 
 
 # Lee todo el archivo para utilizar el lexer_aritmetico y aplicar toda la gramatica
@@ -228,10 +229,18 @@ def html_css(archivo):
         css.write(".ERROR{background-color:red}")
 
 
+# variable de apoyo para la impresión de los archivos
 archivos_totales = 0
 
 
-executor = ProcessPoolExecutor(max_workers = 6)
+# Pool para procesos
+executor = ProcessPoolExecutor(max_workers=6)
+
+
+# Función recursiva para la lectura de archivos
+# Para que se ejecute con procesos, descomentar la linea debajo que dice 'con procesos'
+# Para que se ejecute con threads, descomentar la linea debajo que dice 'con threads'
+# Para que no utilice procesos ni threads; descomentar la linea que dice 'sin threads ni procesos'
 def lectura_archivos(directorio):
     global archivos_totales
     global executor
@@ -242,26 +251,27 @@ def lectura_archivos(directorio):
             html_css(directorio+'/'+archivo)
             archivos_totales += 1
 
-            # para procesos
-            # print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
-            # para threads
+            # Con procesos
+            print(f'{multiprocessing.current_process()} {archivo_con_directorio} archivo numero: {archivos_totales}')
+            # Con threads
             # print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')\
             # sin threads ni procesos
             print(f'archivo numero: {archivos_totales}')
         elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
-            #Con procesos
-            # executor.submit(lectura_archivos, archivo_con_directorio)
-            #Con threads
-            # threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, args = (directorio+'/'+archivo,)).start()
-            #Sin threads
-            lectura_archivos(directorio+'/'+archivo)
+            # Con procesos
+            executor.submit(lectura_archivos, archivo_con_directorio)
+            # Con threads
+            # threading.Thread(name = directorio+'/'+archivo, target=lectura_archivos, \
+            # args = (directorio+'/'+archivo,)).start()
+            # sin threads ni procesos
+            # lectura_archivos(directorio+'/'+archivo)
+
 
 def main(archivo):
     lectura_archivos(archivo)
 
 
-
+# Necesario para que puedas ejecutar los procesos
 if __name__ == '__main__':
     main('test')
-#main('test')
 
