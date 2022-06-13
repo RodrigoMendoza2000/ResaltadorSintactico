@@ -256,7 +256,7 @@ def lectura_archivos(directorio):
             # Con threads
             # print(f'{threading.current_thread()} {archivo_con_directorio} y archivo numero: {archivos_totales}')\
             # sin threads ni procesos
-            print(f'archivo numero: {archivos_totales}')
+            # print(f'archivo numero: {archivos_totales}')
         elif not bool(re.search('.*\.html', archivo)) and not bool(re.search('.*\.css', archivo)):
             # Con procesos
             executor.submit(lectura_archivos, archivo_con_directorio)
